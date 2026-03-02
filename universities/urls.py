@@ -22,7 +22,7 @@ urlpatterns = [
     path('filieres/', FiliereListView.as_view()),
     path('filieres/create/', FiliereCreateView.as_view()),
 
-    path('candidatures/', CandidatureListView.as_view()),
+    path('candidatures/', CandidatureListView.as_view(), name='create-candidature'),
     path('candidatures/create/', CandidatureCreateView.as_view()),
     path('candidatures/<int:pk>/update/', CandidatureUpdateStatusView.as_view()),
 

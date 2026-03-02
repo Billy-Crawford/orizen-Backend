@@ -83,37 +83,78 @@ class CandidatureSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Candidature
-        fields = ['id', 'student', 'filiere', 'status', 'submitted_at', 'reviewed_by']
-
+        fields = [
+            'id',
+            'student',
+            'filiere',
+            'status',
+            'submitted_at',
+            'advisor',
+            'advisor_approved',
+            'reviewed_by_university'
+        ]
 
 class CandidatureCreateSerializer(serializers.ModelSerializer):
 
+    student_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = Candidature
-        fields = ['filiere']
+        fields = ['filiere', 'student_id']
 
     def validate(self, data):
         request = self.context['request']
         user = request.user
         filiere = data['filiere']
 
-        # 1️⃣ Vérifier rôle
-        if user.role != 'student':
-            raise serializers.ValidationError("Seuls les étudiants peuvent postuler.")
+        # ----------------------
+        # CAS ETUDIANT
+        # ----------------------
+        if user.role == 'student':
 
-        # 2️⃣ Vérifier doublon
-        if Candidature.objects.filter(student=user, filiere=filiere).exists():
-            raise serializers.ValidationError("Vous avez déjà postulé à cette filière.")
+            if Candidature.objects.filter(student=user, filiere=filiere).exists():
+                raise serializers.ValidationError(
+                    "Vous avez déjà postulé à cette filière."
+                )
+
+        # ----------------------
+        # CAS CONSEILLER
+        # ----------------------
+        elif user.role == 'advisor':
+
+            student_id = data.get("student_id")
+
+            if not student_id:
+                raise serializers.ValidationError("student_id is required.")
+
+            from users.models import AdvisorStudentRelation
+
+            relation = AdvisorStudentRelation.objects.filter(
+                advisor=user,
+                student_id=student_id,
+                status="accepted"
+            ).first()
+
+            if not relation:
+                raise serializers.ValidationError(
+                    "Ce student ne vous est pas assigné."
+                )
+
+            if Candidature.objects.filter(
+                student=relation.student,
+                filiere=filiere
+            ).exists():
+                raise serializers.ValidationError(
+                    "Ce student a déjà postulé à cette filière."
+                )
+
+        else:
+            raise serializers.ValidationError(
+                "Seuls les étudiants ou conseillers peuvent postuler."
+            )
 
         return data
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        return Candidature.objects.create(
-            student=user,
-            filiere=validated_data['filiere'],
-            status='pending'
-        )
 
 # Notification
 class NotificationSerializer(serializers.ModelSerializer):
