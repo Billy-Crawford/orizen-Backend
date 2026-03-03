@@ -69,3 +69,25 @@ class AdvisorStudentRelation(models.Model):
 
     def __str__(self):
         return f"{self.student.username} → {self.advisor.username} ({self.status})"
+
+
+#   ============================== MESSAGE ===========================
+class chatMessage(models.Model):
+
+    relation = models.ForeignKey(
+        AdvisorStudentRelation,
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+
+    sender = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+    )
+
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.message[:30]}"
+

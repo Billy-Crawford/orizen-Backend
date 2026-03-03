@@ -1,7 +1,7 @@
 # users/serializers.py
 
 from rest_framework import serializers
-from .models import CustomUser, AdvisorStudentRelation
+from .models import CustomUser, AdvisorStudentRelation, chatMessage
 from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
@@ -47,3 +47,13 @@ class AdvisorStudentStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "username", "email"]
+
+# =============== Message =================
+class chatMessageSerializer(serializers.ModelSerializer):
+    sender_username = serializers.CharField(source="sender.username", read_only=True)
+
+    class Meta:
+        model = chatMessage
+        fields = ["id", "sender", "sender_username", "message", "created_at"]
+        read_only_fields = ["sender"]
+

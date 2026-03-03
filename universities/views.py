@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 
+from users.permissions import IsUniversity
 from .models import University, Filiere, Candidature, Notification, ActionHistory
 from .permissions import IsAdminOrUniversity
 from .serializers import UniversitySerializer, FiliereSerializer, FiliereCreateSerializer, CandidatureSerializer, \
@@ -162,7 +163,7 @@ class CandidatureCreateView(generics.CreateAPIView):
 class CandidatureUpdateStatusView(generics.UpdateAPIView):
     queryset = Candidature.objects.all()
     serializer_class = CandidatureSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsUniversity]
 
     def update(self, request, *args, **kwargs):
         candidature = self.get_object()
@@ -219,63 +220,6 @@ class CandidatureUpdateStatusView(generics.UpdateAPIView):
         serializer = self.get_serializer(candidature)
         return Response(serializer.data)
 
-# class CandidatureUpdateStatusView(generics.UpdateAPIView):
-#     queryset = Candidature.objects.all()
-#     serializer_class = CandidatureSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#
-#     def update(self, request, *args, **kwargs):
-#         candidature = self.get_object()
-#         user = request.user
-#
-#         if user.role != "university":
-#             raise PermissionDenied("Seuls les universités peuvent accepter/rejeter.")
-#
-#         if candidature.filiere.university.created_by != user:
-#             raise PermissionDenied("Cette candidature ne concerne pas votre université.")
-#
-#         status_value = request.data.get("status")
-#         if status_value not in ["accepted", "rejected"]:
-#             return Response(
-#                 {"error": "Le statut doit être 'accepted' ou 'rejected'."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-#
-#         # Mettre à jour le statut
-#         candidature.status = status_value
-#         candidature.reviewed_by_university = user
-#         candidature.save()
-#
-#         # --- 1️⃣ Notification à l'étudiant ---
-#         message = f"Votre candidature à la filière {candidature.filiere.name} de l'université {candidature.filiere.university.name} a été {status_value}."
-#         Notification.objects.create(recipient=candidature.student, message=message)
-#
-#         # --- 2️⃣ Historique pour les 3 utilisateurs ---
-#         ActionHistory.objects.create(
-#             user=user,
-#             action_type="update_status",
-#             description=f"A {'accepté' if status_value == 'accepted' else 'rejetté'} la candidature de {candidature.student.username} pour {candidature.filiere.name}"
-#         )
-#
-#         # Historique pour l'étudiant
-#         ActionHistory.objects.create(
-#             user=candidature.student,
-#             action_type="update_status",
-#             description=f"Votre candidature pour {candidature.filiere.name} a été {status_value} par {user.username}"
-#         )
-#
-#         # Historique pour l'admin (on prend le premier admin pour l'exemple)
-#         from users.models import CustomUser
-#         admin_user = CustomUser.objects.filter(role="admin").first()
-#         if admin_user:
-#             ActionHistory.objects.create(
-#                 user=admin_user,
-#                 action_type="update_status",
-#                 description=f"{user.username} a {'accepté' if status_value == 'accepted' else 'rejetté'} la candidature de {candidature.student.username}"
-#             )
-#
-#         serializer = self.get_serializer(candidature)
-#         return Response(serializer.data)
 
 
 # recupere notifications et historique

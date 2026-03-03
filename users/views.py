@@ -10,7 +10,7 @@ from .models import CustomUser, AdvisorStudentRelation
 from .serializers import (
     RegisterStudentSerializer,
     UserSerializer,
-    AdvisorStudentRelationSerializer, AdvisorStudentStudentSerializer
+    AdvisorStudentRelationSerializer, AdvisorStudentStudentSerializer, chatMessageSerializer
 )
 from .permissions import IsStudent, IsAdvisor
 
@@ -228,5 +228,52 @@ class MyStudentsListView(generics.ListAPIView):
 
         return CustomUser.objects.filter(id__in=student_ids)
 
+# =============== Message ====================
+class ChatMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request, relation_id):
+
+        try:
+            relation = AdvisorStudentRelation.objects.get(
+                id=relation_id,
+                status="accepted"
+            )
+        except AdvisorStudentRelation.DoesNotExist:
+            return Response({"error": "chat not allowed"}, status=403)
+
+        # verifier que l'utilisateur appartient a la relation'
+        if request.user not in [relation.student, relation.advisor]:
+            return Response({"error": "Unauthorized"}, status=401)
+
+        messages = relation.messages.all().order_by("-created_at")
+        serializer = chatMessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+
+class SendMessageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, relation_id):
+
+        try:
+            relation = AdvisorStudentRelation.objects.get(
+                id=relation_id,
+                status="accepted"
+            )
+        except AdvisorStudentRelation.DoesNotExist:
+            return Response({"error": "chat not allowed"}, status=403)
+
+        if request.user not in [relation.student, relation.advisor]:
+            return Response({"error": "Unauthorized"}, status=403)
+
+        serializer = chatMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                sender=request.user,
+                relation=relation,
+            )
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
 
