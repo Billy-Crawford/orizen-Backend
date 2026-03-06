@@ -3,7 +3,7 @@
 from django.urls import path
 from .views import RegisterStudentView, UserProfileView, MyTokenObtainPairView, ReviewAdvisorRequestView, \
     SendAdvisorRequestView, AdvisorStudentsView, AdvisorRequestsView, AdvisorListView, MyStudentsListView, \
-    SendMessageView, ChatMessagesView
+    SendMessageView, ChatMessagesView, MyAdvisorView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -26,8 +26,10 @@ urlpatterns = [
 
     # conseiller voit ses etudiant
     path("my-students/", MyStudentsListView.as_view()),
+    path('my-advisor/', MyAdvisorView.as_view(), name='my-advisor'),
 
     # Message
     path('chat/<int:relation_id>/', ChatMessagesView.as_view()),
     path('chat/<int:relation_id>/send/', SendMessageView.as_view()),
+
 ]

@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-vevl$vy(hw996c2lf1=lmy01&)@9x4+te*(l2_q-yj%7x#hn&2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     'tests_orientation',
     'universities',
     'documents',
-    'chat',
+    # 'chat',
     'notifications',
-    'dashboard',
+    # 'dashboard',
 ]
 
 

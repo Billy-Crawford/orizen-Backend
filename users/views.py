@@ -228,6 +228,28 @@ class MyStudentsListView(generics.ListAPIView):
 
         return CustomUser.objects.filter(id__in=student_ids)
 
+
+# ============== mon conseiller personnel ====================
+
+class MyAdvisorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.role != "student":
+            return Response({"error": "Unauthorized"}, status=403)
+
+        relation = AdvisorStudentRelation.objects.filter(
+            student=user,
+            status="accepted"
+        ).first()
+
+        if not relation or not relation.advisor:
+            return Response({"advisor": None})
+
+        serializer = UserSerializer(relation.advisor)
+        return Response(serializer.data)
+
 # =============== Message ====================
 class ChatMessagesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -276,4 +298,5 @@ class SendMessageView(APIView):
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
+
 
