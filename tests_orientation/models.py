@@ -124,6 +124,8 @@ class TestSession(models.Model):
         blank=True
     )
 
+    question_order = models.JSONField(null=True, blank=True)
+
     def can_take_test(self):
         last_test = TestSession.objects.filter(
             student=self.student,
