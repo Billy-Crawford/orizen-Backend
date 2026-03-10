@@ -32,21 +32,23 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-class AdvisorStudentRelationSerializer(serializers.ModelSerializer):
-        student_username = serializers.CharField(source="student.username", read_only=True)
-        advisor_username = serializers.CharField(source="advisor.username", read_only=True)
-
-        class Meta:
-            model = AdvisorStudentRelation
-            fields = "__all__"
-
-
 # =================== Conseiller voit ses etudiants ===================
 
 class AdvisorStudentStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "username", "email"]
+
+
+class AdvisorStudentRelationSerializer(serializers.ModelSerializer):
+    student = AdvisorStudentStudentSerializer(read_only=True)
+    advisor = AdvisorStudentStudentSerializer(read_only=True)
+
+    class Meta:
+        model = AdvisorStudentRelation
+        fields = ["id", "student", "advisor"]
+
+
 
 # =============== Message =================
 class chatMessageSerializer(serializers.ModelSerializer):

@@ -244,10 +244,11 @@ class MyAdvisorView(APIView):
             status="accepted"
         ).first()
 
-        if not relation or not relation.advisor:
-            return Response({"advisor": None})
+        if not relation:
+            return Response({"relation": None})
 
-        serializer = UserSerializer(relation.advisor)
+        # Renvoie relation + info conseiller
+        serializer = AdvisorStudentRelationSerializer(relation)
         return Response(serializer.data)
 
 # =============== Message ====================
@@ -268,7 +269,7 @@ class ChatMessagesView(APIView):
         if request.user not in [relation.student, relation.advisor]:
             return Response({"error": "Unauthorized"}, status=401)
 
-        messages = relation.messages.all().order_by("-created_at")
+        messages = relation.messages.all().order_by("created_at")
         serializer = chatMessageSerializer(messages, many=True)
         return Response(serializer.data)
 

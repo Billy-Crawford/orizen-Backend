@@ -83,28 +83,6 @@ class Candidature(models.Model):
         return f"{self.student.username} → {self.filiere.name} [{self.status}] ({advisor_info})"
 
 
-# class Candidature(models.Model):
-#     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'role':'student'})
-#     filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE, related_name='candidatures')
-#     status = models.CharField(max_length=20, choices=CANDIDATURE_STATUS, default='pending')
-#     submitted_at = models.DateTimeField(auto_now_add=True)
-#     reviewed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='candidatures_reviewed')  # Conseiller qui a validé
-#
-#     submitted_by_advisor = models.BooleanField(default=False)
-#
-#     advisor = models.ForeignKey(
-#         CustomUser,
-#         on_delete=models.SET_NULL,
-#         null=True,
-#         blank=True,
-#         limit_choices_to={'role': 'advisor'},
-#         related_name="submitted_candidatures"
-#     )
-#
-#     def __str__(self):
-#         return f"{self.student.username} → {self.filiere.name} [{self.status}]"
-
-
 # Notifications
 class Notification(models.Model):
     recipient = models.ForeignKey(
