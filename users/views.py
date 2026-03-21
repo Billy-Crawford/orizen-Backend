@@ -209,6 +209,7 @@ class AdvisorStudentsView(generics.ListAPIView):
 # =====================================================
 # Conseiller voir ses etudiants
 # =====================================================
+
 class MyStudentsListView(generics.ListAPIView):
     serializer_class = AdvisorStudentStudentSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -227,6 +228,9 @@ class MyStudentsListView(generics.ListAPIView):
         student_ids = relations.values_list("student_id", flat=True)
 
         return CustomUser.objects.filter(id__in=student_ids)
+
+    def get_serializer_context(self):
+        return {"request": self.request}
 
 
 # ============== mon conseiller personnel ====================

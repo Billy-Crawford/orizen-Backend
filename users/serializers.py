@@ -33,11 +33,28 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
         return user
 
 # =================== Conseiller voit ses etudiants ===================
-
 class AdvisorStudentStudentSerializer(serializers.ModelSerializer):
+    relation_id = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ["id", "username", "email"]
+        fields = ["id", "username", "email", "relation_id"]
+
+    def get_relation_id(self, obj):
+        request = self.context.get("request")
+
+        relation = AdvisorStudentRelation.objects.filter(
+            advisor=request.user,
+            student=obj,
+            status="accepted"
+        ).first()
+
+        return relation.id if relation else None
+
+# class AdvisorStudentStudentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomUser
+#         fields = ["id", "username", "email"]
 
 
 class AdvisorStudentRelationSerializer(serializers.ModelSerializer):
